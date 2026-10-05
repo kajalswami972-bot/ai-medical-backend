@@ -25,9 +25,7 @@ async function callGroqAI(userPrompt, base64Image = null) {
     // Try multiple models one by one automatically
     const modelsToTry = [
         "llama-3.3-70b-versatile",
-        "llama-3.1-70b-versatile",
-        "llama-3.2-11b-vision-preview",
-        "llama3-70b-8192"
+        "openai/gpt-oss-20b"
     ];
 
     let data = null;
