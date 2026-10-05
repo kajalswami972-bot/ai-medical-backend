@@ -10,16 +10,25 @@ app.use(express.json({ limit: "50mb" }));
 
 // Helper function with automatic model fallback
 async function callGroqAI(userPrompt, base64Image = null) {
-    const messages = [{
-        role: "user",
-        content: [{ type: "text", text: userPrompt }]
-    }];
+    let messages;
 
+    // Dynamically format content based on whether an image is provided
     if (base64Image) {
-        messages[0].content.push({ 
-            type: "image_url", 
-            image_url: { url: `data:image/jpeg;base64,${base64Image}` } 
-        });
+        messages = [{
+            role: "user",
+            content: [
+                { type: "text", text: userPrompt },
+                { 
+                    type: "image_url", 
+                    image_url: { url: `data:image/jpeg;base64,${base64Image}` } 
+                }
+            ]
+        }];
+    } else {
+        messages = [{
+            role: "user",
+            content: userPrompt
+        }];
     }
 
     // Try multiple models one by one automatically
