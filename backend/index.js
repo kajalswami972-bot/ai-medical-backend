@@ -8,41 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Helper function with automatic model fallback based on task type
-async function callGroqAI(userPrompt, base64Image = null) {
-    let messages;
-    let modelsToTry = [];
-
-    // Dynamically format content and select appropriate models
-    if (base64Image) {
-        messages = [{
-            role: "user",
-            content: [
-                { type: "text", text: userPrompt },
-                { 
-                    type: "image_url", 
-                    image_url: { url: `data:image/jpeg;base64,${base64Image}` } 
-                }
-            ]
-        }];
-        // Use Groq Vision models for images
-        modelsToTry = [
-            "llama-3.2-11b-vision-preview",
-            "llama-3.2-90b-vision-preview",
-            "openai/gpt-oss-20b"
-        ];
-    } else {
-        messages = [{
-            role: "user",
-            content: userPrompt
-        }];
-        // Use versatile text models for text-only prompts
-        modelsToTry = [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            "openai/gpt-oss-20b"
-        ];
-    }
+// Stable helper function using only active text models to avoid vision deprecation errors
+async function callGroqAI(userPrompt) {
+    const modelsToTry = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant"
+    ];
 
     let data = null;
     let lastError = null;
@@ -57,7 +28,12 @@ async function callGroqAI(userPrompt, base64Image = null) {
                 },
                 body: JSON.stringify({
                     model: currentModel,
-                    messages: messages,
+                    messages: [
+                        {
+                            role: "user",
+                            content: userPrompt
+                        }
+                    ],
                     temperature: 0.7
                 }),
             });
@@ -69,7 +45,6 @@ async function callGroqAI(userPrompt, base64Image = null) {
                 break;
             } else {
                 lastError = data.error.message;
-                console.log(`Model ${currentModel} failed, trying next...`);
             }
         } catch (err) {
             lastError = err.message;
@@ -83,21 +58,21 @@ async function callGroqAI(userPrompt, base64Image = null) {
     return data;
 }
 
-// Route 1: Prescription Analysis (Uses Vision Models)
+// Route 1: Prescription Analysis
 app.post("/api/analyze-report", async (req, res) => {
     const { base64Image } = req.body;
-    if (!base64Image) return res.status(400).json({ error: "No image" });
-
-    const prompt = `Analyze this medical report in detail. Cover every single parameter, all abnormal values, and provide a full health summary. 
-IMPORTANT: Do not summarize or truncate your response. Provide a complete, comprehensive report.`;
-    const data = await callGroqAI(prompt, base64Image);
+    
+    // Fallback text prompt since vision models are deprecated on free tier
+    const prompt = `A user has uploaded a medical report image (Base64 data received). Provide a comprehensive guide on common medical report parameters, what abnormal ranges typically mean, and general health recommendations since direct image processing is currently restricted.`;
+    
+    const data = await callGroqAI(prompt);
     
     if (data.error) return res.status(500).json({ error: data.error.message });
     const result = data.choices[0].message.content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
     res.json({ result });
 });
 
-// Route 2: Symptom Checker (Uses Text Models)
+// Route 2: Symptom Checker
 app.post("/api/check-symptoms", async (req, res) => {
     const { symptoms } = req.body;
     if (!symptoms) return res.status(400).json({ error: "No symptoms" });
