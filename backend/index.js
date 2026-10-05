@@ -8,11 +8,11 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Helper function using currently active Groq models
+// Stable helper function using only active text models to avoid vision deprecation errors
 async function callGroqAI(userPrompt) {
     const modelsToTry = [
         "llama-3.3-70b-versatile",
-        "openai/gpt-oss-20b"
+        "llama-3.1-8b-instant"
     ];
 
     let data = null;
@@ -62,7 +62,8 @@ async function callGroqAI(userPrompt) {
 app.post("/api/analyze-report", async (req, res) => {
     const { base64Image } = req.body;
     
-    const prompt = `A user has uploaded a medical report image. Provide a comprehensive guide on common medical report parameters, what abnormal ranges typically mean, and general health recommendations.`;
+    // Fallback text prompt since vision models are deprecated on free tier
+    const prompt = `A user has uploaded a medical report image (Base64 data received). Provide a comprehensive guide on common medical report parameters, what abnormal ranges typically mean, and general health recommendations since direct image processing is currently restricted.`;
     
     const data = await callGroqAI(prompt);
     
