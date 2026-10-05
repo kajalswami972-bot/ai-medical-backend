@@ -8,11 +8,12 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Helper function with automatic model fallback
+// Helper function with automatic model fallback based on task type
 async function callGroqAI(userPrompt, base64Image = null) {
     let messages;
+    let modelsToTry = [];
 
-    // Dynamically format content based on whether an image is provided
+    // Dynamically format content and select appropriate models
     if (base64Image) {
         messages = [{
             role: "user",
@@ -24,18 +25,22 @@ async function callGroqAI(userPrompt, base64Image = null) {
                 }
             ]
         }];
+        // Use Groq Vision models for images
+        modelsToTry = [
+            "llama-3.2-11b-vision-preview",
+            "llama-3.2-90b-vision-preview"
+        ];
     } else {
         messages = [{
             role: "user",
             content: userPrompt
         }];
+        // Use versatile text models for text-only prompts
+        modelsToTry = [
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant"
+        ];
     }
-
-    // Try multiple models one by one automatically
-    const modelsToTry = [
-        "llama-3.3-70b-versatile",
-        "openai/gpt-oss-20b"
-    ];
 
     let data = null;
     let lastError = null;
@@ -50,13 +55,13 @@ async function callGroqAI(userPrompt, base64Image = null) {
                 },
                 body: JSON.stringify({
                     model: currentModel,
-                    messages: messages
+                    messages: messages,
+                    temperature: 0.7
                 }),
             });
 
             data = await response.json();
             
-            // Agar model successfully chal gaya toh loop tod do
             if (!data.error) {
                 console.log(`Successfully used model: ${currentModel}`);
                 break;
@@ -76,7 +81,7 @@ async function callGroqAI(userPrompt, base64Image = null) {
     return data;
 }
 
-// Route 1: Prescription Analysis
+// Route 1: Prescription Analysis (Uses Vision Models)
 app.post("/api/analyze-report", async (req, res) => {
     const { base64Image } = req.body;
     if (!base64Image) return res.status(400).json({ error: "No image" });
@@ -90,7 +95,7 @@ IMPORTANT: Do not summarize or truncate your response. Provide a complete, compr
     res.json({ result });
 });
 
-// Route 2: Symptom Checker
+// Route 2: Symptom Checker (Uses Text Models)
 app.post("/api/check-symptoms", async (req, res) => {
     const { symptoms } = req.body;
     if (!symptoms) return res.status(400).json({ error: "No symptoms" });
