@@ -29,7 +29,7 @@ async function callGroqAI(userPrompt, base64Image = null) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            model: "qwen/qwen3.6-27b",
+            model: "llama-3.1-70b-versatile",
             messages: messages
         }),
     });
