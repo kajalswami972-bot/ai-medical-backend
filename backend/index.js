@@ -67,7 +67,7 @@ async function callOpenRouterAI(userPrompt) {
 app.post("/api/analyze-report", async (req, res) => {
     const { base64Image } = req.body;
     
-    const prompt = `A user has uploaded a medical report image. Provide a comprehensive guide on common medical report parameters, abnormal ranges, and general health recommendations. Constraint: Do not use HTML tags like <br>. quick advice without long disclaimers.`;
+    const prompt = `A user has uploaded a medical report image. Provide a comprehensive guide on common medical report parameters, abnormal ranges, and general health recommendations. Constraint: Do not use HTML tags like <br>.`;
     
     const data = await callOpenRouterAI(prompt);
     
@@ -87,7 +87,7 @@ app.post("/api/check-symptoms", async (req, res) => {
     const { symptoms } = req.body;
     if (!symptoms) return res.status(400).json({ error: "No symptoms" });
 
-    const prompt = `Act as a medical assistant. Analyze: "${symptoms}". Provide advice and when to see a doctor. Constraint: Do not use HTML tags like <br> or <think> tags. Use clean text formatting. quick advice without long disclaimers.`;
+    const prompt = `Act as a medical assistant. Analyze: "${symptoms}". Provide advice and when to see a doctor. Constraint: Do not use HTML tags like <br> or <think> tags. Use clean text formatting.`;
     
     const data = await callOpenRouterAI(prompt);
     
