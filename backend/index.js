@@ -14,8 +14,8 @@ async function callOpenRouterAI(userPrompt) {
     const modelsToTry = [
         "meta-llama/llama-3.3-70b-instruct:free",
         "deepseek/deepseek-chat:free",
-        "apodex/apodex-1.1-mini:free",
-
+        "googlr/gemma-2-9b-it:free",
+        "qwen/gwen-2.5-72b-instruct:free"
     ];
 
     let data = null;
