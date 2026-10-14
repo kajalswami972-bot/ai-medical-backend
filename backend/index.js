@@ -15,7 +15,7 @@ async function callOpenRouterAI(userPrompt) {
         "meta-llama/llama-3.3-70b-instruct:free",
         "deepseek/deepseek-chat:free",
         "apodex/apodex-1.1-mini:free",
-        "inception/mercury-decide:free"
+
     ];
 
     let data = null;
