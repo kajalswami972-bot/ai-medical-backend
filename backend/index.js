@@ -15,7 +15,7 @@ async function callOpenRouterAI(userPrompt) {
         "meta-llama/llama-3.3-70b-instruct:free",
         "deepseek/deepseek-chat:free",
         "googlr/gemma-2-9b-it:free",
-        "qwen/gwen-2.5-72b-instruct:free"
+        "nvidia/nemotron-3-nano-30b-a3b:free",
     ];
 
     let data = null;
