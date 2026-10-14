@@ -12,10 +12,7 @@ app.use(express.json({ limit: "50mb" }));
 async function callOpenRouterAI(userPrompt) {
     // OpenRouter active & reliable models
     const modelsToTry = [
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "deepseek/deepseek-chat:free",
-        "googlr/gemma-2-9b-it:free",
-        "nvidia/nemotron-3-nano-30b-a3b:free",
+        "openrouter/free"
     ];
 
     let data = null;
